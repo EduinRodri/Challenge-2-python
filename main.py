@@ -1,3 +1,7 @@
+SEPARADOR_ELEMENTO = "§§§"
+SEPARADOR_TABLA = "¶¶¶"
+PROPIEDAD = "§"
+TITULO = "¶"
 
 # Constantes
 MENU_PRINCIPAL = '''
@@ -30,6 +34,8 @@ MENU_CITAS = '''
 MENU_CLIENTES_VETERINARIOS = '''
 1. Consultar Cliente
 2. Consultar Veterinario
+1. Consultar Cliente
+2. Consultar Veterinario
 3. Modificar Cliente
 4. Modificar Veterinario
 '''
@@ -42,17 +48,19 @@ class Persona:
         self.id = identidad
 
 
-class cliente(Persona):
+class Cliente(Persona):
     def __init__(self, nombre, contacto, identidad, direccion):
         super().__init__(nombre, contacto, identidad)
         self.direccion = direccion
 
-class veterinario(Persona):
+
+class Veterinario(Persona):
     def __init__(self, nombre, contacto, identidad, especialidad, licencia, horario):
         super().__init__(nombre, contacto, identidad)
         self.especialidad = especialidad
         self.licencia = licencia
         self.horario = horario
+
 
 class Mascota:
     def __init__(self, nombre, especie, raza, edad, identidad, dueño):
@@ -63,6 +71,7 @@ class Mascota:
         self.identidad = identidad
         self.dueño = dueño
 
+
 class Servicio:
     def __init__(self, tipo, descripcion, duracion, costo, frecuencia):
         self.tipo = tipo
@@ -70,6 +79,7 @@ class Servicio:
         self.duracion = duracion
         self.costo = costo
         self.frecuencia = frecuencia
+
 
 class Cita:
     def __init__(self, fecha, hora, servicio, veterinario, id_mascota):
@@ -81,6 +91,69 @@ class Cita:
 
 # Main Programa
 def main():
+
+    pass
+
+
+class Datos:
+    use = ""
+    tablas: dict[str, list[persona]] = {
+        "clientes": [],
+        "veterinarios": [],
+        "mascotas": [],
+        "servicios": [],
+    }
+    def __init__(self):
+        with open("datos.txt", "r") as datos:
+            text = datos.read()
+            if text != "":
+                tablasContenido = text.split(SEPARADOR_TABLA)
+                for tabla in tablasContenido:
+                    titulo = tabla.split(TITULO)[0]
+                    contenidoTexto = tabla.split(TITULO)[1]
+                    contenido = contenidoTexto.split(SEPARADOR_ELEMENTO)
+                    for elemento in contenido:
+                        propiedades = elemento.split(PROPIEDAD)
+                        if titulo == "cliente":
+                            cliente = Cliente(propiedades[0], propiedades[1], propiedades[2], propiedades[3])
+                            self.tablas["clientes"].append(cliente)
+                        elif titulo == "veterinario":
+                            veterinario = Veterinario(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
+                            self.tablas["veterinarios"].append(veterinario)
+                        elif titulo == "mascota":
+                            mascota = Mascota(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
+                            self.tablas["mascotas"].append(mascota)
+                        elif titulo == "servicio":
+                            servicio = Servicio(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
+                            self.tablas["servicios"].append(servicio)
+                        pass
+                    
+                    
+        pass
+    pass
+
+    def obtener(self, id: int):
+        result = self.tablas[self.use][id]
+        return result
+    
+    def guardar(self):
+        with open("datos.txt", "w") as datos:
+            for key in self.tablas:
+                texto = key + TITULO
+                for elemento in self.tablas[key]:
+                    for propiedad in elemento:
+                        texto += propiedad + PROPIEDAD
+                    pass
+                    texto += SEPARADOR_ELEMENTO
+                pass
+                texto += SEPARADOR_TABLA
+                datos.write(texto)
+            pass
+        pass
+
+    def eliminar(self, id: int):
+        self.tablas[self.use].pop(id)
+        pass
     while True:
         print(MENU_PRINCIPAL)
         opcion = input("Seleccione una opción: ")
