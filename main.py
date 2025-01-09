@@ -48,12 +48,12 @@ class Persona:
         self.id = identidad
 
 
-class Cliente(persona):
+class Cliente(Persona):
     def __init__(self, nombre, contacto, identidad, direccion):
         super().__init__(nombre, contacto, identidad)
         self.direccion = direccion
 
-class Veterinario(persona):
+class Veterinario(Persona):
     def __init__(self, nombre, contacto, identidad, especialidad, licencia, horario):
         super().__init__(nombre, contacto, identidad)
         self.especialidad = especialidad
