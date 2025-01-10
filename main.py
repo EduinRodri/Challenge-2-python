@@ -1,9 +1,13 @@
+# Constantes
+import os
+import platform
+
+
 SEPARADOR_ELEMENTO = "§§§"
 SEPARADOR_TABLA = "¶¶¶"
 PROPIEDAD = "§"
 TITULO = "¶"
 
-# Constantes
 MENU_PRINCIPAL = '''
 ====Bienvenido a Huella Feliz====
 1. Registrar Cliente
@@ -12,7 +16,7 @@ MENU_PRINCIPAL = '''
 4. Registrar Cita
 5. Consultar Información de Clientes
 6. Consultar Información de Mascotas
-7. Consultar Historial de Servicios
+7. Consultar Servicios
 8. Consultar Citas
 9. Salir
 '''
@@ -85,55 +89,15 @@ class Cita:
         self.veterinario = veterinario
         self.id_mascota = id_mascota
 
-# Main Programa
-def main():
-    while True:
-        print(MENU_PRINCIPAL)
-        opcion = input("Seleccione una opción: ")
-
-        if opcion == "1":
-            print("Registrar Cliente")
-            pass
-        elif opcion == "2":
-            print("Registrar Veterinario")
-            pass
-        elif opcion == "3":
-            print("Registrar Mascota")
-            pass
-        elif opcion == "4":
-            print("Registrar Cita")
-            pass
-        elif opcion == "5":
-            print("Consultar Información de Clientes")
-            pass
-        elif opcion == "6":
-            print("Consultar Información de Mascotas")
-            pass
-        elif opcion == "7":
-            print("Consultar Historial de Servicios")
-            pass
-        elif opcion == "8":
-            print("Consultar Citas")
-            pass
-        elif opcion == "9":
-            print("Saliendo del sistema. ¡Hasta luego!")
-            break
-        else:
-            print("Opción no válida. Intente de nuevo.")
-
-if __name__ == "__main__":
-    main()
-
-    pass
-
 
 class Datos:
     use = ""
-    tablas: dict[str, list[persona]] = {
+    tablas: dict[str, list[Persona]] = {
         "clientes": [],
         "veterinarios": [],
         "mascotas": [],
         "servicios": [],
+        "citas": []
     }
     def __init__(self):
         with open("datos.txt", "r") as datos:
@@ -158,11 +122,10 @@ class Datos:
                         elif titulo == "servicio":
                             servicio = Servicio(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
                             self.tablas["servicios"].append(servicio)
-                        pass
-                    
-                    
-        pass
-    pass
+                        elif titulo == "cita":
+                            cita = Cita(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
+                            self.tablas["citas"].append(cita)
+                        
 
     def obtener(self, id: int):
         result = self.tablas[self.use][id]
@@ -175,14 +138,58 @@ class Datos:
                 for elemento in self.tablas[key]:
                     for propiedad in elemento:
                         texto += propiedad + PROPIEDAD
-                    pass
                     texto += SEPARADOR_ELEMENTO
-                pass
                 texto += SEPARADOR_TABLA
                 datos.write(texto)
-            pass
-        pass
 
     def eliminar(self, id: int):
         self.tablas[self.use].pop(id)
-        pass
+
+    def modificar(self, id: int, key: str, value):
+        self.tablas[self.use][id][key] = value
+
+def borrarConsola():
+    if platform.system() == "Windows":
+        os.system('cls')
+    else:
+        os.system('clear')
+
+# Main Programa
+def main():
+    while True:
+        print(MENU_PRINCIPAL)
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+            print("Registrar Cliente") # Eduin
+            pass
+        elif opcion == "2":
+            print("Registrar Veterinario") # Ivan
+            pass
+        elif opcion == "3":
+            print("Registrar Mascota") # Eduin
+            pass
+        elif opcion == "4":
+            print("Registrar Cita") # Ivan
+            pass
+        elif opcion == "5":
+            print("Consultar Información de Clientes") # Eduin
+            pass
+        elif opcion == "6":
+            print("Consultar Información de Mascotas") # Eduin
+            pass
+        elif opcion == "7":
+            print("Consultar Servicios") # Ivan
+            pass
+        elif opcion == "8":
+            print("Consultar Historial de Citas") # Ivan
+            pass
+        elif opcion == "9":
+            print("Saliendo del sistema. ¡Hasta luego!")
+            break
+        else:
+            print("Opción no válida. Intente de nuevo.")
+
+if __name__ == "__main__":
+    main()
+    pass
