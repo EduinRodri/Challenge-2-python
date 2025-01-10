@@ -10,38 +10,44 @@ TITULO = "¶"
 
 MENU_PRINCIPAL = '''
 ====Bienvenido a Huella Feliz====
-1. Registrar Cliente
-2. Registrar Veterinario
-3. Registrar Mascota
-4. Registrar Cita
-5. Consultar Información de Clientes
-6. Consultar Información de Mascotas
-7. Consultar Servicios
-8. Consultar Citas
-9. Salir
+1. Clientes
+2. Veterinarios
+3. Mascotas
+4. Servicios
+5. Agendar citas
+6. Historial de citas (General)
+7. Salir
+'''
+
+MENU_CLIENTE = '''
+===Cliente===
+1. Registrar cliente
+2. Modificar cliente
+3. Consultar clientes
+4. Eliminar cliente
+'''
+
+MENU_VETERINARIO = '''
+===Veterinario===
+1. Registrar veterinario
+2. Modificar veterinario
+3. Consultar veterinarios
+4. Eliminar veterinario
+'''
+
+MENU_MASCOTA = '''
+===Mascota===
+1. Registrar mascota
+2. Modificar mascota
+3. Consultar mascotas
+4. Eliminar mascota
 '''
 
 MENU_SERVICIOS = '''
-1. Consultar Servicios Disponibles
+1. Ver servicios
 2. Registrar Servicio
 3. Modificar Servicio
 4. Eliminar Servicio
-'''
-
-MENU_CITAS = '''
-1. Registrar Cita
-2. Consultar Citas
-3. Modificar Cita
-4. Cancelar Cita
-'''
-
-MENU_CLIENTES_VETERINARIOS = '''
-1. Consultar Cliente
-2. Consultar Veterinario
-1. Consultar Cliente
-2. Consultar Veterinario
-3. Modificar Cliente
-4. Modificar Veterinario
 '''
 
 # Clases
@@ -57,12 +63,14 @@ class Cliente(Persona):
         super().__init__(nombre, contacto, identidad)
         self.direccion = direccion
 
+
 class Veterinario(Persona):
     def __init__(self, nombre, contacto, identidad, especialidad, licencia, horario):
         super().__init__(nombre, contacto, identidad)
         self.especialidad = especialidad
         self.licencia = licencia
         self.horario = horario
+
 
 class Mascota:
     def __init__(self, nombre, especie, raza, edad, identidad, dueño):
@@ -73,6 +81,7 @@ class Mascota:
         self.identidad = identidad
         self.dueño = dueño
 
+
 class Servicio:
     def __init__(self, tipo, descripcion, duracion, costo, frecuencia):
         self.tipo = tipo
@@ -81,6 +90,7 @@ class Servicio:
         self.costo = costo
         self.frecuencia = frecuencia
 
+
 class Cita:
     def __init__(self, fecha, hora, servicio, veterinario, id_mascota):
         self.fecha = fecha
@@ -88,7 +98,6 @@ class Cita:
         self.servicio = servicio
         self.veterinario = veterinario
         self.id_mascota = id_mascota
-
 
 class Datos:
     use = ""
@@ -144,7 +153,7 @@ class Datos:
 
     def eliminar(self, id: int):
         self.tablas[self.use].pop(id)
-
+    
     def modificar(self, id: int, key: str, value):
         self.tablas[self.use][id][key] = value
 
@@ -154,6 +163,7 @@ def borrarConsola():
     else:
         os.system('clear')
 
+
 # Main Programa
 def main():
     while True:
@@ -161,30 +171,24 @@ def main():
         opcion = input("Seleccione una opción: ")
 
         if opcion == "1":
-            print("Registrar Cliente") # Eduin
+            print("Clientes")
             pass
         elif opcion == "2":
-            print("Registrar Veterinario") # Ivan
+            print("Veterinarios")
             pass
         elif opcion == "3":
-            print("Registrar Mascota") # Eduin
+            print("Mascotas")
             pass
         elif opcion == "4":
-            print("Registrar Cita") # Ivan
+            print("Servicios")
             pass
         elif opcion == "5":
-            print("Consultar Información de Clientes") # Eduin
+            print("Agendar citas")
             pass
         elif opcion == "6":
-            print("Consultar Información de Mascotas") # Eduin
+            print("Historial de citas")
             pass
         elif opcion == "7":
-            print("Consultar Servicios") # Ivan
-            pass
-        elif opcion == "8":
-            print("Consultar Historial de Citas") # Ivan
-            pass
-        elif opcion == "9":
             print("Saliendo del sistema. ¡Hasta luego!")
             break
         else:
@@ -192,4 +196,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    pass
