@@ -6,38 +6,44 @@ TITULO = "¶"
 # Constantes
 MENU_PRINCIPAL = '''
 ====Bienvenido a Huella Feliz====
-1. Registrar Cliente
-2. Registrar Veterinario
-3. Registrar Mascota
-4. Registrar Cita
-5. Consultar Información de Clientes
-6. Consultar Información de Mascotas
-7. Consultar Historial de Servicios
-8. Consultar Citas
-9. Salir
+1. Clientes
+2. Veterinarios
+3. Mascotas
+4. Servicios
+5. Agendar citas
+6. Historial de citas (General)
+7. Salir
+'''
+
+MENU_CLIENTE = '''
+===Cliente===
+1. Registrar cliente
+2. Modificar cliente
+3. Consultar clientes
+4. Eliminar cliente
+'''
+
+MENU_VETERINARIO = '''
+===Veterinario===
+1. Registrar veterinario
+2. Modificar veterinario
+3. Consultar veterinarios
+4. Eliminar veterinario
+'''
+
+MENU_MASCOTA = '''
+===Mascota===
+1. Registrar mascota
+2. Modificar mascota
+3. Consultar mascotas
+4. Eliminar mascota
 '''
 
 MENU_SERVICIOS = '''
-1. Consultar Servicios Disponibles
+1. Ver servicios
 2. Registrar Servicio
 3. Modificar Servicio
 4. Eliminar Servicio
-'''
-
-MENU_CITAS = '''
-1. Registrar Cita
-2. Consultar Citas
-3. Modificar Cita
-4. Cancelar Cita
-'''
-
-MENU_CLIENTES_VETERINARIOS = '''
-1. Consultar Cliente
-2. Consultar Veterinario
-1. Consultar Cliente
-2. Consultar Veterinario
-3. Modificar Cliente
-4. Modificar Veterinario
 '''
 
 # Clases
@@ -89,15 +95,9 @@ class Cita:
         self.veterinario = veterinario
         self.id_mascota = id_mascota
 
-# Main Programa
-def main():
-
-    pass
-
-
 class Datos:
     use = ""
-    tablas: dict[str, list[persona]] = {
+    tablas: dict[str, list[Persona]] = {
         "clientes": [],
         "veterinarios": [],
         "mascotas": [],
@@ -126,11 +126,6 @@ class Datos:
                         elif titulo == "servicio":
                             servicio = Servicio(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
                             self.tablas["servicios"].append(servicio)
-                        pass
-                    
-                    
-        pass
-    pass
 
     def obtener(self, id: int):
         result = self.tablas[self.use][id]
@@ -143,46 +138,38 @@ class Datos:
                 for elemento in self.tablas[key]:
                     for propiedad in elemento:
                         texto += propiedad + PROPIEDAD
-                    pass
                     texto += SEPARADOR_ELEMENTO
-                pass
                 texto += SEPARADOR_TABLA
                 datos.write(texto)
-            pass
-        pass
 
     def eliminar(self, id: int):
         self.tablas[self.use].pop(id)
-        pass
+
+# Main Programa
+def main():
     while True:
         print(MENU_PRINCIPAL)
         opcion = input("Seleccione una opción: ")
 
         if opcion == "1":
-            print("Registrar Cliente")
+            print("Clientes")
             pass
         elif opcion == "2":
-            print("Registrar Veterinario")
+            print("Veterinarios")
             pass
         elif opcion == "3":
-            print("Registrar Mascota")
+            print("Mascotas")
             pass
         elif opcion == "4":
-            print("Registrar Cita")
+            print("Servicios")
             pass
         elif opcion == "5":
-            print("Consultar Información de Clientes")
+            print("Agendar citas")
             pass
         elif opcion == "6":
-            print("Consultar Información de Mascotas")
+            print("Historial de citas")
             pass
         elif opcion == "7":
-            print("Consultar Historial de Servicios")
-            pass
-        elif opcion == "8":
-            print("Consultar Citas")
-            pass
-        elif opcion == "9":
             print("Saliendo del sistema. ¡Hasta luego!")
             break
         else:
