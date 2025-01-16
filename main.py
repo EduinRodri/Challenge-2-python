@@ -7,6 +7,7 @@ SEPARADOR_ELEMENTO = "§§§"
 SEPARADOR_TABLA = "¶¶¶"
 PROPIEDAD = "§"
 TITULO = "¶"
+DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 
 MENU_PRINCIPAL = '''
 ====Bienvenido a Huella Feliz====
@@ -50,6 +51,20 @@ MENU_SERVICIOS = '''
 4. Eliminar Servicio
 '''
 
+# funciones fundamentales para clases
+def borrarConsola():
+    if platform.system() == "Windows":
+        os.system('cls')
+    else:
+        os.system('clear')
+
+def isFloat(valor: str):
+    try:
+        float(valor)
+        return True
+    except ValueError:
+        return False
+
 # Clases
 class Persona:
     def __init__(self, nombre, contacto, identidad):
@@ -70,6 +85,12 @@ class Veterinario(Persona):
         self.especialidad = especialidad
         self.licencia = licencia
         self.horario = horario
+    
+    def obtenerDia (self, dia: str):
+        index = DIAS.index(dia)
+        if self.horario[index] == "1":
+            return True
+            
 
 
 class Mascota:
@@ -98,6 +119,97 @@ class Cita:
         self.servicio = servicio
         self.veterinario = veterinario
         self.id_mascota = id_mascota
+
+class PropiedadFormulario:
+    def __init__(self, titulo, valor, callback: function = None):
+        self.titulo = titulo
+        self.valor = valor
+        self.callback = callback
+
+
+class Formulario:
+    def __init__(self, titulo:str, campos:list[PropiedadFormulario]):
+        self.__titulo = titulo
+        self.__campos = campos
+    
+    def agregarCampo(self, titulo:str, valor:str, callback: function = None): 
+        prop = PropiedadFormulario(titulo, valor)
+        if callback != None:
+            prop.callback = callback
+        self.__campos.append(prop)
+    
+    def modificarCampo(self, titulo:str, valor:str):
+        for campo in self.__campos:
+            if campo.titulo == titulo:
+                campo.valor = valor
+    
+    def eliminarCampo(self, titulo:str):
+        for campo in self.__campos:
+            if campo.titulo == titulo:
+                self.__campos.remove(campo)
+    
+    def obtenerCampo(self, titulo:str):
+        for campo in self.__campos:
+            if campo.titulo == titulo:
+                return campo
+    
+    def realizar(self):
+        print(self.__titulo)
+        print("Digite los valores solicitados")
+        formulario: dict[str, str | int | float | bool] = {}
+        for campo in self.__campos:
+            while True:
+                texto = campo.titulo + ": "
+                if campo.valor == "boolean":
+                    print(campo.titulo)
+                    print("1. Sí")
+                    print("2. No")
+                    texto = "Respuesta: "
+                respuesta = input(texto)
+                try:
+                    valorCorrecto = True
+                    valorIngresar = ""
+                    
+                    # validamos que el campo ingresado sea un valor admitido por el formulario
+                    if campo.valor == "int":
+                        if respuesta.isnumeric():
+                            valorIngresar = int(respuesta)
+                        else:
+                            valorCorrecto = False
+                    elif campo.valor == "float":
+                        if isFloat(respuesta):
+                            valorIngresar = float(respuesta)
+                        else:
+                            valorCorrecto = False
+                    elif campo.valor == "boolean":
+                        if respuesta == "1" or respuesta == "Si" or respuesta == "si" or respuesta == "SI":
+                            valorIngresar = True
+                        elif respuesta == "2" or respuesta == "No" or respuesta == "no" or respuesta == "NO":
+                            valorIngresar = False
+                        else: 
+                            valorCorrecto = False
+                            
+                    else:
+                        valorIngresar = respuesta
+
+                    boo = True
+                    if campo.callback != None:
+                        boo = campo.callback(respuesta)
+                    if boo:
+                        formulario[campo.titulo] = valorIngresar
+                        pass
+                            
+
+                    if not valorCorrecto:
+                        raise ValueError("Valor incorrecto")
+                    break
+                except ValueError as e:
+                    print(e)
+                    return
+                
+        return formulario
+
+    
 
 class Datos:
     use = ""
@@ -164,24 +276,44 @@ class Datos:
         self.tablas[self.use].append(elemento)
 
 
-def borrarConsola():
-    if platform.system() == "Windows":
-        os.system('cls')
-    else:
-        os.system('clear')
+
 
 def menuVeterinario(datos: Datos):
     borrarConsola()
     print(MENU_VETERINARIO)
-    datos.use = "veterinarios"
     opcion = input("Seleccione una opción: ")
+    datos.use = "veterinarios"
     if opcion == "1":
-        print("Ingrese los datos del veterinario")
-        nombre = input("Nombre: ")
-        contacto = input("Contacto: ")
-        especialidad = input("Especialidad: ")
-        licencia = input("Licencia: ")
-        horario = input("Horario: ")
+        # tipos de especialidades admitidas
+        especialidades = ["Cardiología", "Dermatología", "Neurología", "Oftalmología", "Oncología", "Ortopedia"]
+
+        # creamos el formulario y agregamos los campos
+        formulario = Formulario("Registrar veterinario", [])
+        formulario.agregarCampo("Nombre", "str", lambda x: len(x) >= 3 and x.isalpha() )
+        formulario.agregarCampo("Contacto", "str")
+        formulario.agregarCampo("Especialidad", "str", lambda x: x in especialidades)
+        formulario.agregarCampo("Licencia", "str", lambda x: len(x) == 10 and x.isnumeric())
+        resultado = formulario.realizar()
+
+        # vamos a realizar un segundo formulario para obtener el horario de atención
+        formularioHorario = Formulario("Horario de atención. ¿Tiene disponibilidad los siguientes dias?", [])
+        for dia in DIAS:
+            formularioHorario.agregarCampo(dia, "boolean")
+
+        resultadoHorario =  formularioHorario.realizar()
+        horario = ""
+        for dia in resultadoHorario:
+            if resultadoHorario[dia]:
+                horario += "1"
+            else:
+                horario += "0"
+
+        # obtenemos los valores del resultado del formulario
+        nombre = resultado["Nombre"]
+        contacto = resultado["Contacto"]
+        especialidad = resultado["Especialidad"]
+        licencia = resultado["Licencia"]
+
         veterinario = Veterinario(nombre, contacto, datos.largo(), especialidad, licencia, horario)
         datos.agregar(veterinario)
         pass
