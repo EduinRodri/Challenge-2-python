@@ -156,6 +156,13 @@ class Datos:
     
     def modificar(self, id: int, key: str, value):
         self.tablas[self.use][id][key] = value
+    
+    def largo (self):
+        return len(self.tablas[self.use])
+    
+    def agregar(self, elemento):
+        self.tablas[self.use].append(elemento)
+
 
 def borrarConsola():
     if platform.system() == "Windows":
@@ -163,13 +170,40 @@ def borrarConsola():
     else:
         os.system('clear')
 
+def menuVeterinario(datos: Datos):
+    borrarConsola()
+    print(MENU_VETERINARIO)
+    datos.use = "veterinarios"
+    opcion = input("Seleccione una opción: ")
+    if opcion == "1":
+        print("Ingrese los datos del veterinario")
+        nombre = input("Nombre: ")
+        contacto = input("Contacto: ")
+        especialidad = input("Especialidad: ")
+        licencia = input("Licencia: ")
+        horario = input("Horario: ")
+        veterinario = Veterinario(nombre, contacto, datos.largo(), especialidad, licencia, horario)
+        datos.agregar(veterinario)
+        pass
+    elif opcion == "2":
+        print("Modificar veterinario")
+        pass
+    elif opcion == "3":
+        print("Consultar veterinarios")
+        pass
+    elif opcion == "4":
+        print("Eliminar veterinario")
+        pass
+    else:
+        print("Opción no válida. Intente de nuevo.")
 
 # Main Programa
 def main():
     while True:
+        borrarConsola()
         print(MENU_PRINCIPAL)
         opcion = input("Seleccione una opción: ")
-
+        datos = Datos()
         if opcion == "1":
             print("Clientes")
             pass
