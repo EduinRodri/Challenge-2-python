@@ -3,10 +3,10 @@ import os
 import platform
 
 
-SEPARADOR_ELEMENTO = "|||"
+SEPARADOR_ELEMENTO = "~"
 SEPARADOR_TABLA = "~~~"
-PROPIEDAD = "°"
-TITULO = "°°"
+PROPIEDAD = "|"
+TITULO = "||"
 DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 
 MENU_PRINCIPAL = '''
@@ -260,17 +260,15 @@ class Datos:
             if text != "":
                 tablasContenido = text.split(SEPARADOR_TABLA)
                 for tabla in tablasContenido:
-                    input(tabla)
                     split = tabla.split(TITULO)
 
                     if len(split) > 1:
                         titulo = split[0]
-                        
                         contenidoTexto = split[1]
                         contenido = contenidoTexto.split(SEPARADOR_ELEMENTO)
-                        if len(contenido) > 1:
-                            for elemento in contenido:
-                                propiedades = elemento.split(PROPIEDAD)
+                        for elemento in contenido:
+                            propiedades = elemento.split(PROPIEDAD)
+                            if len(propiedades) > 1:
                                 if titulo == "clientes":
                                     cliente = Cliente(propiedades[0], propiedades[1], propiedades[2], propiedades[3])
                                     self.tablas["clientes"].append(cliente)

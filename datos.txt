@@ -1,1 +1,1 @@
-clientes°°~~~veterinarios°°Ivan°3122003538°0°Cardiologia°1234567890°111110°|||~~~mascotas°°~~~servicios°°~~~citas°°~~~
+clientes||~~~veterinarios||Ivan|3122003538|0|Cardiologia|1234567890|101111|~~~~mascotas||~~~servicios||~~~citas||~~~
