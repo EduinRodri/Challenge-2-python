@@ -1,1 +1,1 @@
-clientes||~~~veterinarios||Ivan|3122003538|0|Cardiologia|1234567890|101111|~~~~mascotas||~~~servicios||~~~citas||~~~
+clientes||~~~veterinarios||Ivan|3122003538|0|Cardiologia|1234567890|101111|~Luis|3202039811|1|Cardiologia|1234547098|011111|~~~~mascotas||~~~servicios||~~~citas||~~~
