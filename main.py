@@ -69,21 +69,39 @@ def isFloat(valor: str):
 # Clases
 class Persona:
     def __init__(self, nombre, contacto, identidad):
-        self.nombre = nombre
-        self.contacto = contacto
+        self.__nombre = nombre
+        self.__contacto = contacto
         self.id = identidad
     
+    def getNombre (self):
+        return self.__nombre
+    
+    def getContacto (self):
+        return self.__contacto
+    
+    def setNombre(self, nombre):
+        self.__nombre = nombre
+
+    def setContacto(self, contacto):
+        self.__contacto = contacto
+
     def toArray (self):
-        return [self.nombre, self.contacto, str(self.id)]
+        return [self.__nombre, self.__contacto, str(self.id)]
 
 class Cliente(Persona):
     def __init__(self, nombre, contacto, identidad, direccion):
         super().__init__(nombre, contacto, identidad)
-        self.direccion = direccion
+        self.__direccion = direccion
+    
+    def getDireccion(self):
+        return self.__direccion
+
+    def setDireccion(self, direccion):
+        self.__direccion = direccion
     
     def toArray(self):
         array = super().toArray()
-        array.append(self.direccion)
+        array.append(self.__direccion)
         return array
     
 
@@ -91,48 +109,132 @@ class Cliente(Persona):
 class Veterinario(Persona):
     def __init__(self, nombre, contacto, identidad, especialidad, licencia, horario):
         super().__init__(nombre, contacto, identidad)
-        self.especialidad = especialidad
-        self.licencia = licencia
-        self.horario = horario
+        self.__especialidad = especialidad
+        self.__licencia = licencia
+        self.__horario = horario
+    
+    def getEspecialidad(self):
+        return self.__especialidad
+
+    def setEspecialidad(self, especialidad):
+        self.__especialidad = especialidad
+
+    def getLicencia(self):
+        return self.__licencia
+
+    def setLicencia(self, licencia):
+        self.__licencia = licencia
+
+    def getHorario(self):
+        return self.__horario
+
+    def setHorario(self, horario):
+        self.__horario = horario
     
     def obtenerDia (self, dia: str):
         index = DIAS.index(dia)
-        if self.horario[index] == "1":
+        if self.__horario[index] == "1":
             return True
         return False
     
     def toArray(self):
         array = super().toArray()
-        array.append(self.especialidad)
-        array.append(self.licencia)
-        array.append(self.horario)
+        array.append(self.__especialidad)
+        array.append(self.__licencia)
+        array.append(self.__horario)
         return array
             
 
 
 class Mascota:
-    def __init__(self, nombre, especie, raza, edad, identidad, dueño):
-        self.nombre = nombre
-        self.especie = especie
-        self.raza = raza
-        self.edad = edad
-        self.identidad = identidad
-        self.dueño = dueño
+    def __init__(self, nombre, especie, raza, edad, identidad, dueno):
+        self.__nombre = nombre
+        self.__especie = especie
+        self.__raza = raza
+        self.__edad = edad
+        self.__identidad = identidad
+        self.__dueno = dueno
+
+    def getNombre(self):
+        return self.__nombre
+
+    def setNombre(self, nombre):
+        self.__nombre = nombre
+
+    def getEspecie(self):
+        return self.__especie
+
+    def setEspecie(self, especie):
+        self.__especie = especie
+
+    def getRaza(self):
+        return self.__raza
+
+    def setRaza(self, raza):
+        self.__raza = raza
+
+    def getEdad(self):
+        return self.__edad
+
+    def setEdad(self, edad):
+        self.__edad = edad
+
+    def getIdentidad(self):
+        return self.__identidad
+
+    def setIdentidad(self, identidad):
+        self.__identidad = identidad
+
+    def getDueno(self):
+        return self.__dueno
+
+    def setDueno(self, dueno):
+        self.__dueno = dueno
 
     def toArray(self):
-        return [self.nombre, self.especie, self.raza, self.edad, self.identidad, self.dueño]
+        return [self.__nombre, self.__especie, self.__raza, self.__edad, self.__identidad, self.__dueno]
 
 
 class Servicio:
     def __init__(self, tipo, descripcion, duracion, costo, frecuencia):
-        self.tipo = tipo
-        self.descripcion = descripcion
-        self.duracion = duracion
-        self.costo = costo
-        self.frecuencia = frecuencia
+        self.__tipo = tipo
+        self.__descripcion = descripcion
+        self.__duracion = duracion
+        self.__costo = costo
+        self.__frecuencia = frecuencia
+    
+    def getTipo(self):
+        return self.__tipo
+
+    def setTipo(self, tipo):
+        self.__tipo = tipo
+
+    def getDescripcion(self):
+        return self.__descripcion
+
+    def setDescripcion(self, descripcion):
+        self.__descripcion = descripcion
+
+    def getDuracion(self):
+        return self.__duracion
+
+    def setDuracion(self, duracion):
+        self.__duracion = duracion
+
+    def getCosto(self):
+        return self.__costo
+
+    def setCosto(self, costo):
+        self.__costo = costo
+
+    def getFrecuencia(self):
+        return self.__frecuencia
+
+    def setFrecuencia(self, frecuencia):
+        self.__frecuencia = frecuencia
     
     def toArray(self):
-        return [self.tipo, self.descripcion, self.duracion, self.costo, self.frecuencia]
+        return [self.__tipo, self.__descripcion, self.__duracion, self.__costo, self.__frecuencia]
 
 
 class Cita:
@@ -305,9 +407,6 @@ class Datos:
     def eliminar(self, id: int):
         self.tablas[self.use].pop(id)
     
-    def modificar(self, id: int, key: str, value):
-        self.tablas[self.use][id][key] = value
-    
     def largo (self):
         return len(self.tablas[self.use])
     
@@ -317,17 +416,19 @@ class Datos:
 
 def mostrarTabla(tabla: list[Persona]):
     for i in range(len(tabla)):
-        print(f"{i + 1}. {tabla[i].nombre}")
+        print(f"{i + 1}. {tabla[i].getNombre()}")
 
 
 def menuVeterinario(datos: Datos):
     datos.use = "veterinarios"
     especialidades = ["Cardiologia", "Dermatologia", "Neurologia", "Oftalmologia", "Oncologia", "Ortopedia"]
+
     def seleccionarVeterinario():
         print("Seleccione el veterinario")
         mostrarTabla(datos.tablas["veterinarios"])
         veterinario = int(input("Veterinario: ")) - 1
         return veterinario
+    
     while True:
         borrarConsola()
         print(MENU_VETERINARIO)
@@ -374,8 +475,8 @@ def menuVeterinario(datos: Datos):
             borrarConsola()
             veterinario = seleccionarVeterinario()
             borrarConsola()
-            veterinarioSeleccionado = datos.obtener(veterinario)
-            print("Veterinario seleccionado: " + veterinarioSeleccionado.nombre)
+            veterinarioSeleccionado: Veterinario = datos.obtener(veterinario)
+            print("Veterinario seleccionado: " + veterinarioSeleccionado.getNombre())
             formulario = Formulario("Modificar veterinario, Por favor ingrese los datos solicitados, deje en blanco para no modificar el valor", [])
             formulario.agregarCampo("Nombre", "str", lambda x: (len(x) >= 3 or len(x) == 0) and x.isalpha())
             formulario.agregarCampo("Contacto", "str", lambda x: (len(x) > 5 or len(x) == 0))
@@ -398,11 +499,19 @@ def menuVeterinario(datos: Datos):
                         horario += "1"
                     else:
                         horario += "0"
-                datos.modificar(veterinario, "horario", horario)
+                veterinarioSeleccionado.setHorario(horario)
+
+            listLambda = {
+                "Nombre": lambda x: veterinarioSeleccionado.setNombre(x),
+                "Contacto": lambda x: veterinarioSeleccionado.setContacto(x),
+                "Especialidad": lambda x: veterinarioSeleccionado.setEspecialidad(x),
+                "Licencia": lambda x: veterinarioSeleccionado.setLicencia(x)
+            }
 
             for key in resultado:
                 if resultado[key] != "":
-                    datos.modificar(veterinario, key, resultado[key])
+                    listLambda[key](resultado[key])
+
 
             pass
         elif opcion == "3":
@@ -410,10 +519,10 @@ def menuVeterinario(datos: Datos):
             print("Consultar veterinarios")
             verVeterinario:Veterinario = datos.obtener(seleccionarVeterinario())
             borrarConsola()
-            print("Nombre: " + verVeterinario.nombre)
-            print("Contacto: " + verVeterinario.contacto)
-            print("Especialidad: "+verVeterinario.especialidad)
-            print("Licencia: " + verVeterinario.licencia)
+            print("Nombre: " + verVeterinario.getNombre())
+            print("Contacto: " + verVeterinario.getContacto())
+            print("Especialidad: "+verVeterinario.getEspecialidad())
+            print("Licencia: " + verVeterinario.getLicencia())
             print("Horario de atención:")
             for dia in DIAS:
                 if verVeterinario.obtenerDia(dia):
@@ -425,7 +534,7 @@ def menuVeterinario(datos: Datos):
             print("Eliminacion de veterinario")
             veterinarioSeleccionado = seleccionarVeterinario()
             borrarConsola()
-            print("¿Esta seguro de eliminar a "+ datos.obtener(veterinarioSeleccionado).nombre+"?")
+            print("¿Esta seguro de eliminar a "+ datos.obtener(veterinarioSeleccionado).getNombre()+"?")
             print("1) Si")
             print("2) No")
             response = input("Seleccione una opcion: ")
