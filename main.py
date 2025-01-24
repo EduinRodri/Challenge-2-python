@@ -3,10 +3,10 @@ import os
 import platform
 
 
-SEPARADOR_ELEMENTO = "§§§"
-SEPARADOR_TABLA = "¶¶¶"
-PROPIEDAD = "§"
-TITULO = "¶"
+SEPARADOR_ELEMENTO = "|||"
+SEPARADOR_TABLA = "~~~"
+PROPIEDAD = "°"
+TITULO = "°°"
 DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 
 MENU_PRINCIPAL = '''
@@ -34,6 +34,7 @@ MENU_VETERINARIO = '''
 2. Modificar veterinario
 3. Consultar veterinarios
 4. Eliminar veterinario
+5. Salir
 '''
 
 MENU_MASCOTA = '''
@@ -71,12 +72,20 @@ class Persona:
         self.nombre = nombre
         self.contacto = contacto
         self.id = identidad
-
+    
+    def toArray (self):
+        return [self.nombre, self.contacto, str(self.id)]
 
 class Cliente(Persona):
     def __init__(self, nombre, contacto, identidad, direccion):
         super().__init__(nombre, contacto, identidad)
         self.direccion = direccion
+    
+    def toArray(self):
+        array = super().toArray()
+        array.append(self.direccion)
+        return array
+    
 
 
 class Veterinario(Persona):
@@ -90,6 +99,14 @@ class Veterinario(Persona):
         index = DIAS.index(dia)
         if self.horario[index] == "1":
             return True
+        return False
+    
+    def toArray(self):
+        array = super().toArray()
+        array.append(self.especialidad)
+        array.append(self.licencia)
+        array.append(self.horario)
+        return array
             
 
 
@@ -102,6 +119,9 @@ class Mascota:
         self.identidad = identidad
         self.dueño = dueño
 
+    def toArray(self):
+        return [self.nombre, self.especie, self.raza, self.edad, self.identidad, self.dueño]
+
 
 class Servicio:
     def __init__(self, tipo, descripcion, duracion, costo, frecuencia):
@@ -110,6 +130,9 @@ class Servicio:
         self.duracion = duracion
         self.costo = costo
         self.frecuencia = frecuencia
+    
+    def toArray(self):
+        return [self.tipo, self.descripcion, self.duracion, self.costo, self.frecuencia]
 
 
 class Cita:
@@ -119,12 +142,16 @@ class Cita:
         self.servicio = servicio
         self.veterinario = veterinario
         self.id_mascota = id_mascota
+    
+    def toArray(self):
+        return [self.fecha, self.hora, self.servicio, self.veterinario, self.id_mascota]
 
 class PropiedadFormulario:
-    def __init__(self, titulo, valor, callback: function = None):
+    def __init__(self, titulo, valor, callback = None, invalido = ""):
         self.titulo = titulo
         self.valor = valor
         self.callback = callback
+        self.invalido = invalido
 
 
 class Formulario:
@@ -132,10 +159,11 @@ class Formulario:
         self.__titulo = titulo
         self.__campos = campos
     
-    def agregarCampo(self, titulo:str, valor:str, callback: function = None): 
+    def agregarCampo(self, titulo:str, valor:str, callback = None, invalido=""): 
         prop = PropiedadFormulario(titulo, valor)
         if callback != None:
             prop.callback = callback
+            prop.invalido = invalido
         self.__campos.append(prop)
     
     def modificarCampo(self, titulo:str, valor:str):
@@ -155,11 +183,11 @@ class Formulario:
     
     def realizar(self):
         print(self.__titulo)
-        print("Digite los valores solicitados")
         formulario: dict[str, str | int | float | bool] = {}
         for campo in self.__campos:
             while True:
                 texto = campo.titulo + ": "
+                error = "Valor incorrecto"
                 if campo.valor == "boolean":
                     print(campo.titulo)
                     print("1. Sí")
@@ -176,11 +204,13 @@ class Formulario:
                             valorIngresar = int(respuesta)
                         else:
                             valorCorrecto = False
+                            error = "El valor debe ser un número entero"
                     elif campo.valor == "float":
                         if isFloat(respuesta):
                             valorIngresar = float(respuesta)
                         else:
                             valorCorrecto = False
+                            error = "El valor debe ser un numero decimal"
                     elif campo.valor == "boolean":
                         if respuesta == "1" or respuesta == "Si" or respuesta == "si" or respuesta == "SI":
                             valorIngresar = True
@@ -195,17 +225,21 @@ class Formulario:
                     boo = True
                     if campo.callback != None:
                         boo = campo.callback(respuesta)
+                        valorCorrecto = boo
+                        if campo.invalido != "":
+                            error = campo.invalido
+                            
                     if boo:
                         formulario[campo.titulo] = valorIngresar
                         pass
                             
 
                     if not valorCorrecto:
-                        raise ValueError("Valor incorrecto")
+                        raise ValueError(error)
                     break
                 except ValueError as e:
                     print(e)
-                    return
+                    
                 
         return formulario
 
@@ -226,26 +260,32 @@ class Datos:
             if text != "":
                 tablasContenido = text.split(SEPARADOR_TABLA)
                 for tabla in tablasContenido:
-                    titulo = tabla.split(TITULO)[0]
-                    contenidoTexto = tabla.split(TITULO)[1]
-                    contenido = contenidoTexto.split(SEPARADOR_ELEMENTO)
-                    for elemento in contenido:
-                        propiedades = elemento.split(PROPIEDAD)
-                        if titulo == "cliente":
-                            cliente = Cliente(propiedades[0], propiedades[1], propiedades[2], propiedades[3])
-                            self.tablas["clientes"].append(cliente)
-                        elif titulo == "veterinario":
-                            veterinario = Veterinario(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
-                            self.tablas["veterinarios"].append(veterinario)
-                        elif titulo == "mascota":
-                            mascota = Mascota(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
-                            self.tablas["mascotas"].append(mascota)
-                        elif titulo == "servicio":
-                            servicio = Servicio(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
-                            self.tablas["servicios"].append(servicio)
-                        elif titulo == "cita":
-                            cita = Cita(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
-                            self.tablas["citas"].append(cita)
+                    input(tabla)
+                    split = tabla.split(TITULO)
+
+                    if len(split) > 1:
+                        titulo = split[0]
+                        
+                        contenidoTexto = split[1]
+                        contenido = contenidoTexto.split(SEPARADOR_ELEMENTO)
+                        if len(contenido) > 1:
+                            for elemento in contenido:
+                                propiedades = elemento.split(PROPIEDAD)
+                                if titulo == "clientes":
+                                    cliente = Cliente(propiedades[0], propiedades[1], propiedades[2], propiedades[3])
+                                    self.tablas["clientes"].append(cliente)
+                                elif titulo == "veterinarios":
+                                    veterinario = Veterinario(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
+                                    self.tablas["veterinarios"].append(veterinario)
+                                elif titulo == "mascotas":
+                                    mascota = Mascota(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
+                                    self.tablas["mascotas"].append(mascota)
+                                elif titulo == "servicios":
+                                    servicio = Servicio(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
+                                    self.tablas["servicios"].append(servicio)
+                                elif titulo == "citas":
+                                    cita = Cita(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
+                                    self.tablas["citas"].append(cita)
                         
 
     def obtener(self, id: int):
@@ -257,7 +297,8 @@ class Datos:
             for key in self.tablas:
                 texto = key + TITULO
                 for elemento in self.tablas[key]:
-                    for propiedad in elemento:
+                    iterable = elemento.toArray()
+                    for propiedad in iterable:
                         texto += propiedad + PROPIEDAD
                     texto += SEPARADOR_ELEMENTO
                 texto += SEPARADOR_TABLA
@@ -276,58 +317,130 @@ class Datos:
         self.tablas[self.use].append(elemento)
 
 
+def mostrarTabla(tabla: list[Persona]):
+    for i in range(len(tabla)):
+        print(f"{i + 1}. {tabla[i].nombre}")
 
 
 def menuVeterinario(datos: Datos):
-    borrarConsola()
-    print(MENU_VETERINARIO)
-    opcion = input("Seleccione una opción: ")
     datos.use = "veterinarios"
-    if opcion == "1":
-        # tipos de especialidades admitidas
-        especialidades = ["Cardiología", "Dermatología", "Neurología", "Oftalmología", "Oncología", "Ortopedia"]
+    especialidades = ["Cardiologia", "Dermatologia", "Neurologia", "Oftalmologia", "Oncologia", "Ortopedia"]
+    def seleccionarVeterinario():
+        print("Seleccione el veterinario")
+        mostrarTabla(datos.tablas["veterinarios"])
+        veterinario = int(input("Veterinario: ")) - 1
+        return veterinario
+    while True:
+        borrarConsola()
+        print(MENU_VETERINARIO)
+        opcion = input("Seleccione una opción: ")
+        if opcion == "1":
+            borrarConsola()
+            # creamos el formulario y agregamos los campos
+            formulario = Formulario("Registrar veterinario", [])
+            formulario.agregarCampo("Nombre", "str", lambda x: len(x) >= 3 and x.isalpha(), 
+            "El nombre no debe contener numeros y debe tener al menos 3 caracteres")
+            formulario.agregarCampo("Contacto", "str", lambda x: len(x) == 8 or len(x) == 10 and x.isnumeric(),
+            "El contacto debe tener 8 o 10 digitos y debe ser un numero")
+            formulario.agregarCampo("Especialidad", "str", lambda x: x in especialidades,
+            "La especialidad no es valida")
+            formulario.agregarCampo("Licencia", "str", lambda x: len(x) == 10 and x.isnumeric(),
+            "La licencia debe tener 10 digitos y debe ser un numero")
 
-        # creamos el formulario y agregamos los campos
-        formulario = Formulario("Registrar veterinario", [])
-        formulario.agregarCampo("Nombre", "str", lambda x: len(x) >= 3 and x.isalpha() )
-        formulario.agregarCampo("Contacto", "str")
-        formulario.agregarCampo("Especialidad", "str", lambda x: x in especialidades)
-        formulario.agregarCampo("Licencia", "str", lambda x: len(x) == 10 and x.isnumeric())
-        resultado = formulario.realizar()
+            # vamos a realizar un segundo formulario para obtener el horario de atención
+            formularioHorario = Formulario("Horario de atención. ¿Tiene disponibilidad los siguientes dias?", [])
+            for dia in DIAS:
+                formularioHorario.agregarCampo(dia, "boolean")
 
-        # vamos a realizar un segundo formulario para obtener el horario de atención
-        formularioHorario = Formulario("Horario de atención. ¿Tiene disponibilidad los siguientes dias?", [])
-        for dia in DIAS:
-            formularioHorario.agregarCampo(dia, "boolean")
+            resultado = formulario.realizar()
+            resultadoHorario =  formularioHorario.realizar()
 
-        resultadoHorario =  formularioHorario.realizar()
-        horario = ""
-        for dia in resultadoHorario:
-            if resultadoHorario[dia]:
-                horario += "1"
-            else:
-                horario += "0"
+            horario = ""
+            for dia in resultadoHorario:
+                if resultadoHorario[dia]:
+                    horario += "1"
+                else:
+                    horario += "0"
 
-        # obtenemos los valores del resultado del formulario
-        nombre = resultado["Nombre"]
-        contacto = resultado["Contacto"]
-        especialidad = resultado["Especialidad"]
-        licencia = resultado["Licencia"]
+            # obtenemos los valores del resultado del formulario
+            nombre = resultado["Nombre"]
+            contacto = resultado["Contacto"]
+            especialidad = resultado["Especialidad"]
+            licencia = resultado["Licencia"]
 
-        veterinario = Veterinario(nombre, contacto, datos.largo(), especialidad, licencia, horario)
-        datos.agregar(veterinario)
-        pass
-    elif opcion == "2":
-        print("Modificar veterinario")
-        pass
-    elif opcion == "3":
-        print("Consultar veterinarios")
-        pass
-    elif opcion == "4":
-        print("Eliminar veterinario")
-        pass
-    else:
-        print("Opción no válida. Intente de nuevo.")
+            veterinario = Veterinario(nombre, contacto, datos.largo(), especialidad, licencia, horario)
+            datos.agregar(veterinario)
+            datos.guardar()
+            pass
+        elif opcion == "2":
+            borrarConsola()
+            veterinario = seleccionarVeterinario()
+            borrarConsola()
+            veterinarioSeleccionado = datos.obtener(veterinario)
+            print("Veterinario seleccionado: " + veterinarioSeleccionado.nombre)
+            formulario = Formulario("Modificar veterinario, Por favor ingrese los datos solicitados, deje en blanco para no modificar el valor", [])
+            formulario.agregarCampo("Nombre", "str", lambda x: (len(x) >= 3 or len(x) == 0) and x.isalpha())
+            formulario.agregarCampo("Contacto", "str", lambda x: (len(x) > 5 or len(x) == 0))
+            formulario.agregarCampo("Especialidad", "str", lambda x: (x in especialidades or len(x) == 0))
+            formulario.agregarCampo("Licencia", "str", lambda x: (len(x) == 10 or len(x) == 0) and x.isnumeric())
+
+            resultado = formulario.realizar()
+            horario = ""
+
+
+            if input("¿Desea modificar tambien los horarios? (S/N)") == "S":
+                formularioHorario = Formulario("Horario de atención. ¿Tiene disponibilidad los siguientes dias?", [])
+                for dia in DIAS:
+                    formularioHorario.agregarCampo(dia, "boolean")
+
+                resultadoHorario =  formularioHorario.realizar()
+
+                for dia in resultadoHorario:
+                    if resultadoHorario[dia]:
+                        horario += "1"
+                    else:
+                        horario += "0"
+                datos.modificar(veterinario, "horario", horario)
+
+            for key in resultado:
+                if resultado[key] != "":
+                    datos.modificar(veterinario, key, resultado[key])
+
+            pass
+        elif opcion == "3":
+            borrarConsola()
+            print("Consultar veterinarios")
+            verVeterinario:Veterinario = datos.obtener(seleccionarVeterinario())
+            borrarConsola()
+            print("Nombre: " + verVeterinario.nombre)
+            print("Contacto: " + verVeterinario.contacto)
+            print("Especialidad: "+verVeterinario.especialidad)
+            print("Licencia: " + verVeterinario.licencia)
+            print("Horario de atención:")
+            for dia in DIAS:
+                if verVeterinario.obtenerDia(dia):
+                    print(dia)
+            input("Precione entre para volver ")
+            pass
+        elif opcion == "4":
+            borrarConsola()
+            print("Eliminacion de veterinario")
+            veterinarioSeleccionado = seleccionarVeterinario()
+            borrarConsola()
+            print("¿Esta seguro de eliminar a "+ datos.obtener(veterinarioSeleccionado).nombre+"?")
+            print("1) Si")
+            print("2) No")
+            response = input("Seleccione una opcion: ")
+            if response == "1" or response == "Si" or response == "SI" or response == "si":
+                datos.eliminar(veterinarioSeleccionado)
+            datos.guardar()
+            pass
+        elif opcion == "5":
+            break
+        else:
+            print("Opción no válida. Intente de nuevo.")
+        
+        
 
 # Main Programa
 def main():
@@ -340,7 +453,7 @@ def main():
             print("Clientes")
             pass
         elif opcion == "2":
-            print("Veterinarios")
+            menuVeterinario(datos)
             pass
         elif opcion == "3":
             print("Mascotas")
