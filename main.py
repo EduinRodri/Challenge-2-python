@@ -1,13 +1,18 @@
 # Constantes
+from datetime import date
 import os
 import platform
-
 
 SEPARADOR_ELEMENTO = "~"
 SEPARADOR_TABLA = "~~~"
 PROPIEDAD = "|"
-TITULO = "||"
+HEADER = "||"
+AUTOINCREMENT = "(]"
 DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+CARACTERES_RECERVADOS = [
+    SEPARADOR_ELEMENTO, PROPIEDAD, AUTOINCREMENT
+]
+
 
 MENU_PRINCIPAL = '''
 ====Bienvenido a Huella Feliz====
@@ -17,7 +22,8 @@ MENU_PRINCIPAL = '''
 4. Servicios
 5. Agendar citas
 6. Historial de citas (General)
-7. Salir
+7. Terminar ciclo
+8. Salir
 '''
 
 MENU_CLIENTE = '''
@@ -26,6 +32,7 @@ MENU_CLIENTE = '''
 2. Modificar cliente
 3. Consultar clientes
 4. Eliminar cliente
+5. Salir
 '''
 
 MENU_VETERINARIO = '''
@@ -43,6 +50,7 @@ MENU_MASCOTA = '''
 2. Modificar mascota
 3. Consultar mascotas
 4. Eliminar mascota
+5. Salir
 '''
 
 MENU_SERVICIOS = '''
@@ -50,6 +58,18 @@ MENU_SERVICIOS = '''
 2. Registrar Servicio
 3. Modificar Servicio
 4. Eliminar Servicio
+5. Salir
+'''
+
+MENU_AGENDAR_CITA = '''
+===Agendar Cita===
+1. Seleccionar Fecha
+2. Seleccionar Veterinario
+3. Seleccionar Servicio
+4. Seleccionar Mascota
+5. Seleccionar Cliente
+6. Aceptar
+7. Cancelar
 '''
 
 # funciones fundamentales para clases
@@ -72,7 +92,7 @@ class Persona:
         self.__nombre = nombre
         self.__contacto = contacto
         self.id = identidad
-    
+    # se definiran los geters y seters 
     def getNombre (self):
         return self.__nombre
     
@@ -84,7 +104,7 @@ class Persona:
 
     def setContacto(self, contacto):
         self.__contacto = contacto
-
+    # ? La funcion toArray esta presente en todas las clases que se almacenan en los datos 
     def toArray (self):
         return [self.__nombre, self.__contacto, str(self.id)]
 
@@ -145,7 +165,8 @@ class Veterinario(Persona):
         return array
             
 
-
+# * La clase Mascota en adelante no son extenciones de persona pero esta, servicios y citas se toman como tal en
+# * la clase Datos
 class Mascota:
     def __init__(self, nombre, especie, raza, edad, identidad, dueno):
         self.__nombre = nombre
@@ -238,28 +259,101 @@ class Servicio:
 
 
 class Cita:
-    def __init__(self, fecha, hora, servicio, veterinario, id_mascota):
-        self.fecha = fecha
-        self.hora = hora
-        self.servicio = servicio
-        self.veterinario = veterinario
-        self.id_mascota = id_mascota
+    def __init__(self, fecha:str, hora, servicio, veterinario, id_mascota):
+        self.__fecha = fecha
+        self.__hora = hora
+        self.__servicio = servicio
+        self.__veterinario = veterinario
+        self.__id_mascota = id_mascota
+        try:
+            formato = fecha.split("@")
+            self.__ciclo = int(formato[0])
+            self.__dia = int(formato[1])
+        except (ValueError, IndexError):
+            print("Hay un dato corrupto en las fechas de las citas por favor revise su base de datos o reiniciela")
+            self.__ciclo = 0
+            self.__dia = 0
+
+    def getFecha(self):
+        return self.__fecha
+
+    def setFecha(self, fecha:str):
+        self.__fecha = fecha
+        formato = fecha.split("@")
+        self.__ciclo = formato[0]
+        self.__dia = formato[1]
+    
+    def getDia (self):
+        return int(self.__dia)
+
+    def setDia (self, dia):
+        self.__dia = dia
+        self.__fecha = str(self.__ciclo) + "@" + str(dia)
+    
+    def getCiclo (self):
+        return self.__ciclo
+    
+    def setCiclo(self, ciclo):
+        self.__ciclo = ciclo
+        self.__fecha = str(ciclo) + "@" + str(self.__dia)
+
+    def getHora(self):
+        return self.__hora
+
+    def setHora(self, hora):
+        self.__hora = hora
+
+    def getServicio(self):
+        return self.__servicio
+
+    def setServicio(self, servicio):
+        self.__servicio = servicio
+
+    def getVeterinario(self):
+        return self.__veterinario
+
+    def setVeterinario(self, veterinario):
+        self.__veterinario = veterinario
+
+    def getIdMascota(self):
+        return self.__id_mascota
+
+    def setIdMascota(self, id_mascota):
+        self.__id_mascota = id_mascota
     
     def toArray(self):
-        return [self.fecha, self.hora, self.servicio, self.veterinario, self.id_mascota]
+        return [self.__fecha, self.__hora, self.__servicio, self.__veterinario, self.__id_mascota]
+    
+# * Este error personalizado debe saltar cuando el usuario dijita un caracter apartado por el sistema
+# Char = Character que significa caracter
+# Error de caracter recervado
+class RecervedCharError (Exception):
+    def __init__(self):
+        mensaje = "Error: No se admiten los siguientes caracteres para los valores de entrada: "
+        for caracter in CARACTERES_RECERVADOS:
+            mensaje += f"{caracter}, "
+        super().__init__(mensaje)
 
+# * Esta clase es utilizada por Formulario como los campos que se van a preguntar
+# Esta clase usa diferentes tipos, aqui se definen y cual es su funcion
+# str (o cualquier otro no admitido): Recibe cualquier cosa que escriba el usuario y se le devolvera al programador un string
+# int: Recibira unicamente numeros del usuario y se le entregara al programador un int
+# float: Recibira unicamente numeros del usuario y se entregara al programador un float
+# boolean: Hara una pregunta de si y no al usuario y se devolvera al programador True si respondio si y False si respondio no
 class PropiedadFormulario:
-    def __init__(self, titulo, valor, callback = None, invalido = ""):
+    def __init__(self, titulo, tipo, callback = None, invalido = ""):
         self.titulo = titulo
-        self.valor = valor
+        self.tipo = tipo
         self.callback = callback
         self.invalido = invalido
 
 
+# * La clase formulario se usa para facilitar las peticiones de datos al usuario
 class Formulario:
     def __init__(self, titulo:str, campos:list[PropiedadFormulario]):
         self.__titulo = titulo
         self.__campos = campos
+    
     
     def agregarCampo(self, titulo:str, valor:str, callback = None, invalido=""): 
         prop = PropiedadFormulario(titulo, valor)
@@ -268,10 +362,10 @@ class Formulario:
             prop.invalido = invalido
         self.__campos.append(prop)
     
-    def modificarCampo(self, titulo:str, valor:str):
+    def modificarCampo(self, titulo:str, tipo:str):
         for campo in self.__campos:
             if campo.titulo == titulo:
-                campo.valor = valor
+                campo.tipo = tipo
     
     def eliminarCampo(self, titulo:str):
         for campo in self.__campos:
@@ -283,6 +377,7 @@ class Formulario:
             if campo.titulo == titulo:
                 return campo
     
+    # * Esta funcion es importante, se debe usar para realizar todo el formulario y pedir la informacion al usuario
     def realizar(self):
         print(self.__titulo)
         formulario: dict[str, str | int | float | bool] = {}
@@ -290,7 +385,7 @@ class Formulario:
             while True:
                 texto = campo.titulo + ": "
                 error = "Valor incorrecto"
-                if campo.valor == "boolean":
+                if campo.tipo == "boolean":
                     print(campo.titulo)
                     print("1. Sí")
                     print("2. No")
@@ -301,19 +396,19 @@ class Formulario:
                     valorIngresar = ""
                     
                     # validamos que el campo ingresado sea un valor admitido por el formulario
-                    if campo.valor == "int":
+                    if campo.tipo == "int":
                         if respuesta.isnumeric():
                             valorIngresar = int(respuesta)
                         else:
                             valorCorrecto = False
                             error = "El valor debe ser un número entero"
-                    elif campo.valor == "float":
+                    elif campo.tipo == "float":
                         if isFloat(respuesta):
                             valorIngresar = float(respuesta)
                         else:
                             valorCorrecto = False
                             error = "El valor debe ser un numero decimal"
-                    elif campo.valor == "boolean":
+                    elif campo.tipo == "boolean":
                         if respuesta == "1" or respuesta == "Si" or respuesta == "si" or respuesta == "SI":
                             valorIngresar = True
                         elif respuesta == "2" or respuesta == "No" or respuesta == "no" or respuesta == "NO":
@@ -322,6 +417,9 @@ class Formulario:
                             valorCorrecto = False
                             
                     else:
+                        for caracter in CARACTERES_RECERVADOS:
+                            if caracter in respuesta:
+                                raise RecervedCharError
                         valorIngresar = respuesta
 
                     boo = True
@@ -339,64 +437,102 @@ class Formulario:
                     if not valorCorrecto:
                         raise ValueError(error)
                     break
-                except ValueError as e:
+                except (ValueError, RecervedCharError) as e:
                     print(e)
                     
                 
         return formulario
 
     
-
+# * La clase datos es la encargada de almacenar la informacion que ingrese el usuario
 class Datos:
     use = ""
-    tablas: dict[str, list[Persona]] = {
+    __state = "fine"
+    __ciclo = 0
+    __tablas: dict[str, list[Persona]] = {
         "clientes": [],
         "veterinarios": [],
         "mascotas": [],
         "servicios": [],
         "citas": []
     }
+    __autoincrement: dict[str, int] = {
+        "clientes": 0,
+        "veterinarios": 0,
+        "mascotas": 0,
+        "servicios": 0,
+        "citas": 0,
+        "ciclo": 0
+    }
     def __init__(self):
-        with open("datos.txt", "r") as datos:
-            text = datos.read()
-            if text != "":
-                tablasContenido = text.split(SEPARADOR_TABLA)
-                for tabla in tablasContenido:
-                    split = tabla.split(TITULO)
+        try:
+            with open("datos.txt", "r") as datos:
+                text = datos.read()
+                if text != "":
+                    # Primero separamos los datos por cada tabla
+                    tablasContenido = text.split(SEPARADOR_TABLA)
+                    for tabla in tablasContenido:
+                        # A cada tabla la separamos por header y contenido
+                        split = tabla.split(HEADER)
 
-                    if len(split) > 1:
-                        titulo = split[0]
-                        contenidoTexto = split[1]
-                        contenido = contenidoTexto.split(SEPARADOR_ELEMENTO)
-                        for elemento in contenido:
-                            propiedades = elemento.split(PROPIEDAD)
-                            if len(propiedades) > 1:
-                                if titulo == "clientes":
-                                    cliente = Cliente(propiedades[0], propiedades[1], propiedades[2], propiedades[3])
-                                    self.tablas["clientes"].append(cliente)
-                                elif titulo == "veterinarios":
-                                    veterinario = Veterinario(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
-                                    self.tablas["veterinarios"].append(veterinario)
-                                elif titulo == "mascotas":
-                                    mascota = Mascota(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4], propiedades[5])
-                                    self.tablas["mascotas"].append(mascota)
-                                elif titulo == "servicios":
-                                    servicio = Servicio(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
-                                    self.tablas["servicios"].append(servicio)
-                                elif titulo == "citas":
-                                    cita = Cita(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
-                                    self.tablas["citas"].append(cita)
-                        
+                        if len(split) > 1:
+                            # Dividimos el header partiendolo para conseguir de un lado el titulo y del otro el autoincrement de la id
+                            header = split[0].split(AUTOINCREMENT)
+                            titulo = header[0]
+                            autoincrement = int(header[1])
+                            contenidoTexto = split[1]
+                            contenido = contenidoTexto.split(SEPARADOR_ELEMENTO)
 
-    def obtener(self, id: int):
-        result = self.tablas[self.use][id]
+                            self.__autoincrement[titulo] = autoincrement
+
+                            for elemento in contenido:
+                                propiedades = elemento.split(PROPIEDAD)
+                                if len(propiedades) > 1:
+                                    if titulo == "ciclo":
+                                        self.__ciclo = int(propiedades[0])
+                                    elif titulo == "clientes":
+                                        cliente = Cliente(propiedades[0], propiedades[1], int(propiedades[2]), propiedades[3])
+                                        self.__tablas["clientes"].append(cliente)
+                                    elif titulo == "veterinarios":
+                                        veterinario = Veterinario(propiedades[0], propiedades[1], int(propiedades[2]), propiedades[3], propiedades[4], propiedades[5])
+                                        self.__tablas["veterinarios"].append(veterinario)
+                                    elif titulo == "mascotas":
+                                        mascota = Mascota(propiedades[0], propiedades[1], propiedades[2], propiedades[3], int(propiedades[4]), int(propiedades[5]))
+                                        self.__tablas["mascotas"].append(mascota)
+                                    elif titulo == "servicios":
+                                        servicio = Servicio(propiedades[0], propiedades[1], propiedades[2], propiedades[3], propiedades[4])
+                                        self.__tablas["servicios"].append(servicio)
+                                    elif titulo == "citas":
+                                        cita = Cita(propiedades[0], propiedades[1], propiedades[2], int(propiedades[3]), int(propiedades[4]))
+                                        self.__tablas["citas"].append(cita)
+        except FileNotFoundError:
+            with open("datos.txt", "w") as datos:
+                print("Archivo de datos creado correctamente vuelva a ejecutar el programa")
+                self.__state = "reload"
+
+        except ValueError:
+            print("Parece que la base de datos esta corrupta vuelva a intentarlo")
+            self.__state = "error"
+
+    def getCiclo (self):
+        return self.__ciclo
+    
+    def setCiclo (self, num:int):
+        self.__ciclo = num
+
+    def obtenerEstado (self):
+        return self.__state
+
+    def obtener(self, index: int):
+        result = self.__tablas[self.use][index]
         return result
     
     def guardar(self):
         with open("datos.txt", "w") as datos:
-            for key in self.tablas:
-                texto = key + TITULO
-                for elemento in self.tablas[key]:
+            datos.write(f"ciclo{AUTOINCREMENT}0{HEADER}{self.__ciclo}{PROPIEDAD}{SEPARADOR_ELEMENTO}{SEPARADOR_TABLA}")
+            for key in self.__tablas:
+                texto = key + AUTOINCREMENT + str(self.__autoincrement[key]) + HEADER
+                for elemento in self.__tablas[key]:
                     iterable = elemento.toArray()
                     for propiedad in iterable:
                         texto += propiedad + PROPIEDAD
@@ -404,30 +540,83 @@ class Datos:
                 texto += SEPARADOR_TABLA
                 datos.write(texto)
 
-    def eliminar(self, id: int):
-        self.tablas[self.use].pop(id)
+    def eliminar(self, index: int):
+        self.__tablas[self.use].pop(index)
     
     def largo (self):
-        return len(self.tablas[self.use])
+        return len(self.__tablas[self.use])
     
-    def agregar(self, elemento):
-        self.tablas[self.use].append(elemento)
+    def agregar(self, elemento: Persona):
+        elemento.id = self.__autoincrement[self.use]
+        self.__autoincrement[self.use] += 1
+        self.__tablas[self.use].append(elemento)
 
     def obtenerTabla (self):
-        return self.tablas[self.use]
+        return self.__tablas[self.use]
+
+    def obtenerPorId (self, id):
+        resultado: Persona
+        if self.use == "servicios" or self.use == "citas":
+            return self.obtener(id)
+        for element in self.__tablas[self.use]:
+            if element.id == id:
+                resultado = element
+                pass
+            pass
+        return resultado
+    
+    def eliminarPorId (self, id):
+       for i, element in enumerate(self.__tablas[self.use]):
+            if element.id == id:
+                self.__tablas[self.use].pop(i)
+                pass
+            pass
+
+    
+    def horarioVeterinario(self, idVeterinario: int):
+        # TODO: Probar que el sistema de horario funcione
+        horario: list[bool] = [
+            False, False, False, False, False, False
+        ]
+        for i in len(self.__tablas['citas']):
+            cita: Cita = self.__tablas['cita'][i]
+            if cita.getVeterinario() == idVeterinario and self.__ciclo == cita.getCiclo():
+                horario[cita.getFecha()] = True
+        return horario
+    
+
+    def getDiaHorarioVeterinario (self, idVeterinario: int, dia: int):
+        retorno = False
+        for i in len(self.__tablas['citas']):
+            cita: Cita = self.__tablas['cita'][i]
+            if cita.getVeterinario() == idVeterinario and self.__ciclo == cita.getCiclo() and cita.getDia() == dia:
+                retorno = True
+        return retorno
 
 
+# * esta funcion define si la fecha1 es una fecha anterior a fecha2
+def fechaAnterior(fecha1: date, fecha2: date):
+    if fecha1.year < fecha2.year:
+        return True
+    elif fecha1.month < fecha2.month and fecha1.year == fecha2.year:
+        return True
+    elif fecha1.day < fecha2.day and fecha1.month == fecha2.month and fecha1.month == fecha2.month:
+        return True
+    return False
+        
+# * Esta funcion se usa para mostrar una tabla que sea extencion de persona o la tabla mascota
 def mostrarTabla(tabla: list[Persona]):
     for i in range(len(tabla)):
         print(f"{i + 1}. {tabla[i].getNombre()}")
 
-
+# * Esta funcion se usa para mostrar una lista de servicios
 def mostrarServicios (servicios: list[Servicio]):
     for i in range(len(servicios)):
         servicio: Servicio = servicios[i]
         print(f"{i+1} - {servicio.getDescripcion()}")
         pass
 
+# * Esta funcion realiza una pregunta de si y no al usuario y devuelve True si la respuesta es si y False si es no
 def preguntar (pregunta: str):
     print(pregunta)
     print("1. Si")
@@ -437,6 +626,23 @@ def preguntar (pregunta: str):
         return True
     else:
         return False
+
+def pedirNumero (pregunta: str):
+    retorno = 0
+    while True:
+        opcion = input(pregunta)
+        if opcion.isnumeric():
+            opcion = int(opcion)
+        elif isFloat(opcion):
+            opcion = float(opcion)
+        else: 
+            print("Opcion invalida")
+            continue
+        retorno = opcion
+        break
+    return retorno
+
+
 
 def menuVeterinario(datos: Datos):
     datos.use = "veterinarios"
@@ -685,13 +891,89 @@ def menuServicios (datos: Datos):
 
     pass
 
+
+def agendarCitas (datos: Datos):
+    # TODO: Realizar el sistema de agendado de citas tomando en cuenta el horario del veterinario
+    cliente: Cliente
+    servicio: Servicio
+    veterinario: Veterinario
+    mascota: Mascota
+    fechaDeCita = -1
+    borrarConsola()
+
+    def asignarVeterinario (opcion):
+        borrarConsola()
+        datos.use = "veterinarios"
+        veterinarios: list[Veterinario] = datos.obtenerTabla()
+        veterinariosDisponibles: list[Veterinario] = [] 
+        for personal in veterinarios:
+            if personal.obtenerDia(DIAS[opcion]) and not datos.getDiaHorarioVeterinario(personal.id, opcion):
+                veterinariosDisponibles.append(personal)
+                # Estos pass son solo para guiarme yo, por fis no lo quites
+                pass
+            pass
+        # Supongo que ahora toca informar al usuario... Bueno aqui va
+        print("Por favor seleccione un veterinario de los disponibles para el dia escogido")
+        for i, personal in enumerate(veterinariosDisponibles):
+            print(f"{i+1}. {personal.getNombre()}")
+        seleccion: int = pedirNumero("Escriba aqui su eleccion: ") - 1 
+        borrarConsola()
+        return veterinariosDisponibles[seleccion]
+    
+    def asignarFecha ():
+        # Al final decidi no agregar lo de la hora, me complique mucho aun sin la hora... 
+        print("Seleccione un dia para la cita durante la semana en curso")
+        for i, dia in enumerate(DIAS):
+            print(f"{i+1}. {dia}")
+        opcion = pedirNumero("Eleccion: ") - 1
+        # se almacena la primera de las informaciones para agendar la cita
+        return opcion
+
+    while True:
+        print(MENU_AGENDAR_CITA)
+        opcion = input("Seleccione una opcion: ")
+        if opcion == "1":
+            # * En seleccionar "Dia" tambien ira el seleccionar hora de la cita... Aunque aun no se si incluir esto
+            fechaDeCita = asignarFecha()
+            if veterinario is None:
+                veterinario = asignarVeterinario(fechaDeCita)
+            else:
+                if veterinario.obtenerDia(DIAS[fechaDeCita]) and not datos.getDiaHorarioVeterinario(veterinario.id, fechaDeCita):
+                    borrarConsola()
+                else:
+                    veterinario = asignarVeterinario(fechaDeCita)
+                    
+        elif opcion == "2":
+            # * Seleccionar un veterinario implica seleccionar un dia que este trabaje
+            print("Seleccionar Veterinario")
+        elif opcion == "3":
+            print("Seleccionar Servicio")
+        elif opcion == "4":
+            # * Al seleccionar una mascota se debe seleccionar automaticamente su dueño como cliente 
+            print("Seleccionar Mascota")
+        elif opcion == "5":
+            # * Recuerda que si se selecciona un cliente el rango de busqueda de las mascotas se reduce a las de ese cliente
+            print("Seleccionar Cliente")
+        
+        elif opcion == "7":
+            break
+        else:
+            print("Opción no válida. Intente de nuevo.")
+        pass
+
+
+    pass
+
 # Main Programa
 def main():
     while True:
+        datos = Datos()
+        # determinamos si la base de datos cargo correctamente
+        if datos.obtenerEstado() != "fine":
+            break
         borrarConsola()
         print(MENU_PRINCIPAL)
         opcion = input("Seleccione una opción: ")
-        datos = Datos()
         if opcion == "1":
             print("Clientes")
             pass
@@ -705,12 +987,13 @@ def main():
             menuServicios(datos)
             pass
         elif opcion == "5":
-            print("Agendar citas")
+            agendarCitas(datos)
             pass
         elif opcion == "6":
+            # TODO: Hay que realizar el menu de historial de citas
             print("Historial de citas")
             pass
-        elif opcion == "7":
+        elif opcion == "8":
             print("Saliendo del sistema. ¡Hasta luego!")
             break
         else:
