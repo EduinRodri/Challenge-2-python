@@ -627,7 +627,7 @@ def preguntar (pregunta: str):
     else:
         return False
 
-def pedirNumero (pregunta: str):
+def pedirNumero (pregunta: str, max: int | float = 0, min: int | float = 0):
     retorno = 0
     while True:
         opcion = input(pregunta)
@@ -636,6 +636,10 @@ def pedirNumero (pregunta: str):
         elif isFloat(opcion):
             opcion = float(opcion)
         else: 
+            print("Opcion invalida")
+            continue
+
+        if (opcion > max and max > 0) or opcion < min :
             print("Opcion invalida")
             continue
         retorno = opcion
@@ -894,10 +898,10 @@ def menuServicios (datos: Datos):
 
 def agendarCitas (datos: Datos):
     # TODO: Realizar el sistema de agendado de citas tomando en cuenta el horario del veterinario
-    cliente: Cliente
-    servicio: Servicio
-    veterinario: Veterinario
-    mascota: Mascota
+    cliente: Cliente = None
+    servicio: Servicio = None
+    veterinario: Veterinario = None
+    mascota: Mascota = None
     fechaDeCita = -1
     borrarConsola()
 
@@ -905,29 +909,44 @@ def agendarCitas (datos: Datos):
         borrarConsola()
         datos.use = "veterinarios"
         veterinarios: list[Veterinario] = datos.obtenerTabla()
-        veterinariosDisponibles: list[Veterinario] = [] 
-        for personal in veterinarios:
-            if personal.obtenerDia(DIAS[opcion]) and not datos.getDiaHorarioVeterinario(personal.id, opcion):
-                veterinariosDisponibles.append(personal)
-                # Estos pass son solo para guiarme yo, por fis no lo quites
+        veterinariosDisponibles: list[Veterinario] = []
+        if opcion == -1:
+            veterinariosDisponibles = veterinarios
+        else:
+            for personal in veterinarios:
+                if personal.obtenerDia(DIAS[opcion]) and not datos.getDiaHorarioVeterinario(personal.id, opcion):
+                    veterinariosDisponibles.append(personal)
+                    # Estos pass son solo para guiarme yo, por fis no lo quites
+                    pass
                 pass
-            pass
         # Supongo que ahora toca informar al usuario... Bueno aqui va
-        print("Por favor seleccione un veterinario de los disponibles para el dia escogido")
+        print("Por favor seleccione un veterinario de los disponibles")
         for i, personal in enumerate(veterinariosDisponibles):
             print(f"{i+1}. {personal.getNombre()}")
-        seleccion: int = pedirNumero("Escriba aqui su eleccion: ") - 1 
+        seleccion: int = pedirNumero("Escriba aqui su eleccion: ", len(veterinariosDisponibles), 1) - 1 
         borrarConsola()
         return veterinariosDisponibles[seleccion]
     
-    def asignarFecha ():
+    def asignarFecha (horario: list[bool] = []):
         # Al final decidi no agregar lo de la hora, me complique mucho aun sin la hora... 
         print("Seleccione un dia para la cita durante la semana en curso")
-        for i, dia in enumerate(DIAS):
-            print(f"{i+1}. {dia}")
-        opcion = pedirNumero("Eleccion: ") - 1
-        # se almacena la primera de las informaciones para agendar la cita
-        return opcion
+
+        # se verifica que se envia un horario valido para la revision del veterinario especifico
+        if len(horario) > 0 and len(horario) == len(DIAS):
+            indexDay = 1
+            listIndex: list[int] = []
+            for i, dia in enumerate(DIAS):
+                if horario[i]:
+                    print(f"{indexDay}. {dia}")
+                    indexDay += 1
+                    listIndex.append(i)
+            opcion:int = pedirNumero("Eleccion: ", len(listIndex)+1, 1) - 1
+            return listIndex[opcion]
+        else:
+            for i, dia in enumerate(DIAS):
+                print(f"{i+1}. {dia}")
+            opcion: int = pedirNumero("Eleccion: ", len([DIAS])+1, 1) - 1
+            return opcion
 
     while True:
         print(MENU_AGENDAR_CITA)
@@ -945,12 +964,50 @@ def agendarCitas (datos: Datos):
                     
         elif opcion == "2":
             # * Seleccionar un veterinario implica seleccionar un dia que este trabaje
-            print("Seleccionar Veterinario")
+            if fechaDeCita > -1:
+                reasignar = preguntar("¿Desea seleccionar un veterinario en la misma fecha que eligio?")
+                if reasignar:
+                    asignarVeterinario(fechaDeCita)
+                else:
+                    asignarVeterinario(-1)
+            else:
+                veterinario = asignarVeterinario(-1)
+                horario = datos.horarioVeterinario(veterinario.id)
+                fechaDeCita = asignarFecha(horario)
+                borrarConsola()
         elif opcion == "3":
             print("Seleccionar Servicio")
+            datos.use = "servicios"
+            servicios: list[Servicio] = datos.obtenerTabla()
+            mostrarServicios(servicios)
+            opcion = pedirNumero("Eleccion: ", len(servicios)+1, 1) - 1
+            servicio = servicios[opcion]
         elif opcion == "4":
-            # * Al seleccionar una mascota se debe seleccionar automaticamente su dueño como cliente 
-            print("Seleccionar Mascota")
+            # * Al seleccionar una mascota se debe seleccionar automaticamente su dueño como cliente
+            mascotas: list[Mascota] = []
+            if cliente is not None:
+                pregunta = preguntar("Se a seleccionado un cliente, ¿desea seleccionar una mascota de ese cliente?")
+                if not pregunta:
+                    cliente = None
+            if cliente is None:
+                print("Seleccionar Mascota")
+                datos.use = "mascotas"
+                mascotas = datos.obtenerTabla()
+            else:
+                datos.use = "mascotas"
+                for element in datos.obtenerTabla():
+                    element: Mascota
+                    if element.getDueno() == cliente.id:
+                        mascotas.append(element)
+                        pass
+                    pass
+            
+            mostrarTabla(mascotas)
+            opcion = pedirNumero("Eleccion: ", len(mascotas)+1, 1) - 1
+            mascota = mascotas[opcion]
+            if cliente is None:
+                datos.use = "clientes"
+                cliente = datos.obtenerPorId(mascota.getDueno())
         elif opcion == "5":
             # * Recuerda que si se selecciona un cliente el rango de busqueda de las mascotas se reduce a las de ese cliente
             print("Seleccionar Cliente")
