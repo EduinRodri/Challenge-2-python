@@ -15,15 +15,14 @@ CARACTERES_RECERVADOS = [
 
 
 MENU_PRINCIPAL = '''
-====Bienvenido a Huella Feliz====
-1. Clientes
-2. Veterinarios
-3. Mascotas
-4. Servicios
-5. Agendar citas
-6. Historial de citas (General)
-7. Terminar ciclo
-8. Salir
+====Bienvenido a 🐾Huella Feliz🐾====
+1. 🤵  Clientes
+2. 👨‍⚕️  Veterinarios
+3. 🐾  Mascotas
+4. ⚙️  Servicios
+5. 📆  Agendar citas
+6. 🕜  Historial de citas (General)
+8. ⬅️  Salir
 '''
 
 MENU_CLIENTE = '''
@@ -92,6 +91,7 @@ class Persona:
         self.__nombre = nombre
         self.__contacto = contacto
         self.id = identidad
+        
     # se definiran los geters y seters 
     def getNombre (self):
         return self.__nombre
@@ -993,11 +993,11 @@ def main():
             # TODO: Hay que realizar el menu de historial de citas
             print("Historial de citas")
             pass
-        elif opcion == "8":
-            print("Saliendo del sistema. ¡Hasta luego!")
+        elif opcion == "7":
+            print("👋 Saliendo del sistema. ¡Hasta luego!")
             break
         else:
-            print("Opción no válida. Intente de nuevo.")
+            print("⚠️ Opción no válida. Intente de nuevo. ⚠️")
 
 if __name__ == "__main__":
     main()
